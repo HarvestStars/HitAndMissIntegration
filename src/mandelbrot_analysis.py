@@ -13,8 +13,33 @@ class MandelbrotAnalysis:
     def pure_random_sampling(self, num_samples):
         return
 
-    def latin_hypercube_sampling(self, num_samples):
-        return
+    def latin_hypercube_sampling(self, num_samples) -> np.ndarray:
+        """
+        Generate N samples using Latin Hypercube Sampling.
+        We assume that the number of dimensions is 2 and 
+        that we are sampling for each dimension.
+
+        Parameters
+        ----------
+        N : int
+            Number of samples to generate.
+        bounds : tuple
+            Lower and upper bounds for the samples.
+        
+        Returns
+        -------
+        samples : np.ndarray
+            N samples generated using Latin Hypercube Sampling.
+        """
+        sampler = qmc.LatinHypercube(d=1)
+        x_samples = sampler.random(n=num_samples)
+        y_samples = sampler.random(n=num_samples)
+
+        x_samples = qmc.scale(x_samples, self.real_range[0], self.real_range[1])
+        y_samples = qmc.scale(y_samples, self.imag_range[0], self.imag_range[1])
+
+        samples = np.column_stack((x_samples, y_samples))
+        return samples
 
     def orthogonal_sampling(self, num_samples):
         return
@@ -48,6 +73,14 @@ class MandelbrotAnalysis:
         return
 
     def compare_sampling_methods(self, num_samples, min_iter, max_iter):
+        # Code to test the sampling methods, can be removed later.
+        pure_random_samples = self.latin_hypercube_sampling(num_samples)
+        x, y = pure_random_samples[:, 0], pure_random_samples[:, 1]
+        plt.scatter(x, y)
+        plt.title('Latin Hypercube Sampling (2D Projection)')
+        plt.xlabel('Dimension 1')
+        plt.ylabel('Dimension 2')
+        plt.show()
         return
 
 if __name__ == "__main__":
@@ -56,4 +89,5 @@ if __name__ == "__main__":
     min_iter = 10
     max_iter = 100
     mandelbrot.compare_sampling_methods(num_samples, min_iter, max_iter)
+    
     
