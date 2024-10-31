@@ -69,7 +69,11 @@ class MandelbrotAnalysis:
     def monte_c_estimate_gpu(self, samples, max_iter):
         return
 
-    # TODO: Design the following metric
+    # TODO: Design the following metrics and comparison functions
+    # Color the Mandelbrot set with plotting the samples
+    def color_mandelbrot(self, monte_c_estimate_fn, num_samples, max_iter):
+        return
+
     def metrics(self, monte_c_estimate_fn, baseline_samples, min_iter, max_iter):
         return
 
