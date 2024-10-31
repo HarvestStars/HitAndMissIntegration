@@ -15,7 +15,8 @@ class MandelbrotAnalysis:
 
     def latin_hypercube_sampling(self, num_samples) -> np.ndarray:
         """
-        Generate N samples using Latin Hypercube Sampling.
+        Generate N samples using Latin Hypercube Sampling using an grid like.
+        This setup ensures each variable is evenly sampled across its range.
         We assume that the number of dimensions is 2 and 
         that we are sampling for each dimension.
 
@@ -81,6 +82,9 @@ class MandelbrotAnalysis:
         plt.xlabel('Dimension 1')
         plt.ylabel('Dimension 2')
         plt.show()
+        return
+
+    def plot_mandelbrot(self, num_samples, min_iter, max_iter):
         return
 
 if __name__ == "__main__":
