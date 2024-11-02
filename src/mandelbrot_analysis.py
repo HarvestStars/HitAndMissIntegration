@@ -1,12 +1,22 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import qmc
+import os
 #import cupy as cp  # For GPU acceleration
 
 class MandelbrotAnalysis:
     def __init__(self, real_range, imag_range):
         self.real_range = real_range
         self.imag_range = imag_range
+
+    def get_sample_name(self, sample_type):
+        sample_name_list = {
+            0: "Pure",
+            1: "LHS",
+            2: "Ortho"
+        }
+        return sample_name_list.get(sample_type, "Unknown")
+
 
     # Sampling methods
     # with real_range and imag_range as the range of the Mandelbrot set
@@ -55,6 +65,23 @@ class MandelbrotAnalysis:
                 return False
         return True
 
+    def mandel_convergence_check_vectorized(self, samples, max_iter):
+        # complex number array
+        c = samples[:, 0] + 1j * samples[:, 1]
+        z = np.zeros(c.shape, dtype=np.complex128)
+        mask = np.ones(c.shape, dtype=bool)
+        
+        # we use numpy bool array to keep track of the convergence
+        # if the complex number is divergent, we set the corresponding element in the mask to False
+        for _ in range(max_iter):
+            z[mask] = z[mask] ** 2 + c[mask]
+
+            # create a another bool array to keep track of the divergent complex numbers
+            # kick out the divergent complex numbers from the mask
+            mask[np.abs(z) > 2] = False 
+        
+        return mask
+
     # Core function Monte Carlo estimate of the Mandelbrot set area
     # sequential version
     def monte_c_estimate(self, samples, max_iter):
@@ -71,8 +98,26 @@ class MandelbrotAnalysis:
 
     # TODO: Design the following metrics and comparison functions
     # Color the Mandelbrot set with plotting the samples
-    def color_mandelbrot(self, monte_c_estimate_fn, num_samples, max_iter):
-        return
+    def color_mandelbrot(self, samples, max_iter, sample_type = 1):
+        # check the sampe type
+        sample_name = self.get_sample_name(sample_type)
+
+        # get the mask of the samples that are inside the Mandelbrot set
+        mask = self.mandel_convergence_check_vectorized(samples, max_iter)
+
+        # plot the samples
+        plt.figure(figsize=(10, 10))
+        plt.scatter(samples[mask, 0], samples[mask, 1], color='black', s=0.5, label="Inside Mandelbrot Set")
+        plt.scatter(samples[~mask, 0], samples[~mask, 1], color='red', s=0.5, alpha=0.6, label="Outside Mandelbrot Set")
+        plt.xlabel('Real Axis')
+        plt.ylabel('Imaginary Axis')
+        plt.title('Visualization of Mandelbrot Set')
+        plt.legend()
+        
+        # store the image into a file, if no existing directory, create one        
+        output_dir = '../images/color_mandelbrot'
+        os.makedirs(output_dir, exist_ok=True)
+        plt.savefig(f'{output_dir}/mandelbrot_{sample_name}_{len(samples)}_maxIter_{max_iter}.png')
 
     def metrics(self, monte_c_estimate_fn, baseline_samples, min_iter, max_iter):
         return
