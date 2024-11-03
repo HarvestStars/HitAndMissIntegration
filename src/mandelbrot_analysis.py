@@ -1,13 +1,52 @@
+import os
+import sys
+import ctypes
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import qmc
-import os
+
 #import cupy as cp  # For GPU acceleration
 
 class MandelbrotAnalysis:
     def __init__(self, real_range, imag_range):
         self.real_range = real_range
         self.imag_range = imag_range
+        self.lib = None
+
+    def _load_library(self):
+        # combine the path of the shared library
+        lib_path = os.path.join(os.path.dirname(__file__))
+        lib_path = os.path.join(lib_path, "..", "ortho-pack", "lib")
+        
+        if sys.platform.startswith("win"):
+            print("Windows platform detected.")
+            lib_file = "ortho_sampling_generate.dll"
+        elif sys.platform.startswith("linux"):
+            print("Linux platform detected.")
+            lib_file = "libortho_sampling_generate.so"
+        elif sys.platform.startswith("darwin"):
+            print("MacOS platform detected, wait, what? I have no MacOS.")
+            lib_file = "libortho_sampling_generate.dylib" # not implemented, I have no MacOS
+        else:
+            raise OSError("Unsupported operating system.")
+
+        lib_full_path = os.path.join(lib_path, lib_file)
+
+        # load the shared library
+        try:
+            self.lib = ctypes.CDLL(lib_full_path)
+        except OSError as e:
+            raise RuntimeError(f"Unable to load the shared library: {e}")
+
+        # define the function signature
+        self.lib.ortho_sampling_generate.argtypes = [
+            ctypes.c_int,  # major
+            ctypes.c_int,  # runs
+            np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS'),  # points_real
+            np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')   # points_imag
+        ]
+        self.lib.ortho_sampling_generate.restype = None
 
     def get_sample_name(self, sample_type):
         sample_name_list = {
@@ -52,8 +91,22 @@ class MandelbrotAnalysis:
         samples = np.column_stack((x_samples, y_samples))
         return samples
 
-    def orthogonal_sampling(self, num_samples):
-        return
+    def orthogonal_sampling(self, num_samples_root):
+        major = num_samples_root  # major is the number of samples in each dimension
+        num_samples = major * major  # total number of samples
+        runs = 1 # number of runs
+
+        # store the generated points in these arrays
+        points_real = np.zeros(num_samples, dtype=np.float64)
+        points_imag = np.zeros(num_samples, dtype=np.float64)
+
+        # call the shared library function to generate the points
+        self.lib.ortho_sampling_generate(major, runs, points_real, points_imag)
+
+        # combine the real and imaginary parts to get the samples
+        samples = np.column_stack((points_real, points_imag))
+
+        return samples
 
     # Mandelbrot convergence check for real + imag*(1j) with max_iter
     def mandel_convergence_check(self, real, imag, max_iter):

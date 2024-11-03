@@ -1,12 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <unistd.h>
+#ifdef _WIN32
+    #include <windows.h>
+#else
+    #include <unistd.h>
+#endif
 #include "mt19937.h"
 #include "rand_support.h"
 
 #define MAJOR	   9999
 #define SAMPLES    (MAJOR * MAJOR)
+#define RUNS       2
 
 /* We will have a total of SAMPLES samples, one in each of the MAJOR * MAJOR cells.
    Within each MAJOR row or column, we will have MAJOR minor rows/columns, such that
