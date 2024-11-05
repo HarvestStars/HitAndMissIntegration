@@ -19,6 +19,7 @@ class MandelbrotAnalysis:
         lib_path = os.path.join(os.path.dirname(__file__))
         lib_path = os.path.join(lib_path, "..", "ortho-pack", "lib")
         
+        print(f"Ready to do Ortho sampling...")
         if sys.platform.startswith("win"):
             print("Windows platform detected.")
             lib_file = "ortho_sampling_generate.dll"
@@ -69,9 +70,9 @@ class MandelbrotAnalysis:
         rng = np.random.default_rng()
         x_list = []
         y_list = []
-        for n in range(num_sample):
-            x_c = rng.uniform(low = -1, high = 1)
-            y_c = rng.uniform(low = -1, high = 1)
+        for n in range(num_samples):
+            x_c = rng.uniform(low = self.real_range[0], high = self.real_range[1])
+            y_c = rng.uniform(low = self.imag_range[0], high = self.imag_range[1])
             x_list.append(x_c)
             y_list.append(y_c)
             samples = np.column_stack((x_list, y_list))
@@ -180,7 +181,7 @@ class MandelbrotAnalysis:
         plt.scatter(samples[~mask, 0], samples[~mask, 1], color='red', s=0.5, alpha=0.6, label="Outside Mandelbrot Set")
         plt.xlabel('Real Axis')
         plt.ylabel('Imaginary Axis')
-        plt.title('Visualization of Mandelbrot Set')
+        plt.title(f'Visualization of the Mandelbrot Set ({sample_name} Random Sampling with {len(samples)} Samples and {max_iter} Iterations)')
         plt.legend()
         
         # store the image into a file, if no existing directory, create one        
