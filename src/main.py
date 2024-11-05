@@ -28,11 +28,22 @@ def run_mset_colors_ortho_seq(num_samples_list_perfect_root, max_iter_list):
         for j, max_iter in enumerate(max_iter_list):
             sample = mandelbrotAnalysisPlatform.orthogonal_sampling(num_samples)
             mandelbrotAnalysisPlatform.color_mandelbrot(sample, max_iter, 2)
+            
+def run_mset_colors_pure_seq(num_samples_list, max_iter_list):
+    """
+    This function applys purely random sampling to approximate a Mandelbrot set, with given
+    number of samples and times of iteration
+    """
+    for i, num_samples in enumerate(num_samples_list):
+        for j, max_iter in enumerate(max_iter_list):
+            sample = mandelbrotAnalysisPlatform.pure_random_sampling(num_samples)
+            mandelbrotAnalysisPlatform.color_mandelbrot(sample, max_iter, 0)
 
 num_workers = mp.cpu_count()
 results = Parallel(n_jobs=num_workers)(delayed(run_mset_colors_parallel)(num_samples, max_iter) for num_samples, max_iter in mset_list)
 
 mandelbrotAnalysisPlatform._load_library()
 run_mset_colors_ortho_seq(num_samples_list_perfect_root, max_iter_list)
+run_mset_colors_pure_seq(num_samples_list, max_iter_list)
 
 # -----------------------------------------------------------inverstigate convergence-----------------------------------------------------------
