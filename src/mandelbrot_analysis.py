@@ -60,7 +60,23 @@ class MandelbrotAnalysis:
     # Sampling methods
     # with real_range and imag_range as the range of the Mandelbrot set
     def pure_random_sampling(self, num_samples):
-        return
+        """
+        This function implements purey random sampling method using the
+        uniform random number generator in the Numpy package
+        Input: expected number of samples
+        Output: the x and y coordinates of those samples
+        """
+        rng = np.random.default_rng()
+        x_list = []
+        y_list = []
+        for n in range(num_sample):
+            x_c = rng.uniform(low = -1, high = 1)
+            y_c = rng.uniform(low = -1, high = 1)
+            x_list.append(x_c)
+            y_list.append(y_c)
+            samples = np.column_stack((x_list, y_list))
+        return samples
+        
 
     def latin_hypercube_sampling(self, num_samples) -> np.ndarray:
         """
