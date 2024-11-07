@@ -63,7 +63,7 @@ run_mset_colors_ortho_seq(num_samples_list_perfect_root, max_iter_list)
 # run_mset_colors_pure_seq(num_samples_list, max_iter_list)
 
 # -----------------------------------------------------------inverstigate convergence-----------------------------------------------------------
-
+######
 
 stop_event.set()
 wait_thread.join()
