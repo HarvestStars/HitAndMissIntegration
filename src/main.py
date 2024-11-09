@@ -142,7 +142,6 @@ def run_mset_statistic_and_plot_fixed_sample_size():
     plt.close()
 
 
-
 # -----------------------------------------------------------statistic sample generate---------------------------------------------------------
 def run_statistic_sample_generate():
     if mandelbrotAnalysisPlatform.lib is None:
@@ -218,7 +217,7 @@ def main_controller():
             stop_event.set()
             wait_thread.join()
 
-        elif choice == 5:
+        elif choice == 6:
             wait_thread = threading.Thread(target=show_wait_message, args=("Running Mandelbrot statistic metrics and plots, please wait ",))
             wait_thread.start()
             run_statistic_metric()
