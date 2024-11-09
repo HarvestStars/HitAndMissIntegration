@@ -1,0 +1,1 @@
+True Area of the Mandelbrot set samples is 0.095033

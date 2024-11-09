@@ -125,16 +125,7 @@ class MandelbrotAnalysis:
 
         return samples
 
-    # Mandelbrot convergence check for real + imag*(1j) with max_iter
-    def mandel_convergence_check(self, real, imag, max_iter):
-        c = complex(real, imag)
-        z = 0
-        for i in range(max_iter):
-            z = z * z + c
-            if abs(z) > 2:
-                return False
-        return True
-
+    # Mandelbrot set convergence check
     def mandel_convergence_check_vectorized(self, samples, max_iter):
         # complex number array
         c = samples[:, 0] + 1j * samples[:, 1]
@@ -152,21 +143,13 @@ class MandelbrotAnalysis:
         
         return mask
 
-    # Core function Monte Carlo estimate of the Mandelbrot set area
-    # sequential version
-    def monte_c_estimate(self, samples, max_iter):
-        count = 0
-        for real, imag in samples:
-            if self.mandel_convergence_check(real, imag, max_iter):
-                count += 1
-        area_estimate = count / len(samples) * (self.real_range[1] - self.real_range[0]) * (self.imag_range[1] - self.imag_range[0])
-        return area_estimate
-    
-    # GPU version
-    def monte_c_estimate_gpu(self, samples, max_iter):
-        return
+    # Calculate the area of the Mandelbrot set
+    def calcu_mandelbrot_area(self, samples, max_iter):
+        mask = self.mandel_convergence_check_vectorized(samples, max_iter)
+        area = np.sum(mask) / len(mask)
+        area = round (area, 6)
+        return area
 
-    # TODO: Design the following metrics and comparison functions
     # Color the Mandelbrot set with plotting the samples
     def color_mandelbrot(self, samples, max_iter, sample_type = 1):
         # check the sampe type
@@ -189,9 +172,6 @@ class MandelbrotAnalysis:
         os.makedirs(output_dir, exist_ok=True)
         plt.savefig(f'{output_dir}/mandelbrot_{sample_name}_{len(samples)}_maxIter_{max_iter}.png')
 
-    def metrics(self, monte_c_estimate_fn, baseline_samples, min_iter, max_iter):
-        return
-
     def compare_sampling_methods(self, num_samples, min_iter, max_iter):
         # Code to test the sampling methods, can be removed later.
         pure_random_samples = self.latin_hypercube_sampling(num_samples)
@@ -201,9 +181,6 @@ class MandelbrotAnalysis:
         plt.xlabel('Dimension 1')
         plt.ylabel('Dimension 2')
         plt.show()
-        return
-
-    def plot_mandelbrot(self, num_samples, min_iter, max_iter):
         return
 
 if __name__ == "__main__":
