@@ -15,7 +15,7 @@ def show_wait_message(msg = "Hang in there, it's almost done"):
     animation = ["", ".", "..", "..."]
     idx = 0
     while not stop_event.is_set():
-        print(" " * 50, end="\r")
+        print(" " * 100, end="\r")
         print(f"{msg}{animation[idx % len(animation)]}", end="\r")
         idx += 1
         time.sleep(0.5)
@@ -199,15 +199,19 @@ def run_mset_statistic_and_plot():
     output_dir = '../images/convergence_analysis'
     os.makedirs(output_dir, exist_ok=True)
     plt.savefig(f'{output_dir}/converge_3D.png')
+    
+# -----------------------------------------------------------sampling statistical analysis-----------------------------------------------------
+def run_sampling_statistic_analysis():
+    time.sleep(20)
 
 # -----------------------------------------------------------main controller process-----------------------------------------------------------
 def main_controller():
     while True:
-        alertMsg = "Welcome to the Mandelbrot Set Analysis Platform!"
-        print("*" * len(alertMsg))
+        print("*" * 80)
         print("Select an option to run:")
         print("1: Run Mandelbrot color plottings")
         print("2: Run Mandelbrot convergence analysis")
+        print("3: Run Mandelbrot sampling statistical analysis")
         print("0: Exit")
         
         try:
@@ -215,7 +219,7 @@ def main_controller():
         except ValueError:
             print("Invalid input, please enter a number.")
             continue
-        
+
         if choice == 1:
             wait_thread = threading.Thread(target=show_wait_message, args=("Running Mandelbrot color plottings, please wait ",))
             wait_thread.start()
@@ -224,9 +228,16 @@ def main_controller():
             wait_thread.join()
 
         elif choice == 2:
-            wait_thread = threading.Thread(target=show_wait_message, args=("RRunning Mandelbrot convergence analysis, please wait ",))
+            wait_thread = threading.Thread(target=show_wait_message, args=("Running Mandelbrot convergence analysis, please wait ",))
             wait_thread.start()
             run_mset_statistic_and_plot()
+            stop_event.set()
+            wait_thread.join()
+
+        elif choice == 3:
+            wait_thread = threading.Thread(target=show_wait_message, args=("Running Mandelbrot sampling statistic analysis, please wait ",))
+            wait_thread.start()
+            run_sampling_statistic_analysis()
             stop_event.set()
             wait_thread.join()
 
