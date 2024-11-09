@@ -8,6 +8,9 @@ from scipy.stats import qmc
 
 #import cupy as cp  # For GPU acceleration
 
+IMG_COLOR_DIR = '../images/color_mandelbrot'
+IMG_CONVERGENCE_DIR = '../images/convergence_analysis'
+
 class MandelbrotAnalysis:
     def __init__(self, real_range, imag_range):
         self.real_range = real_range
@@ -67,15 +70,21 @@ class MandelbrotAnalysis:
         Input: expected number of samples
         Output: the x and y coordinates of those samples
         """
+        # rng = np.random.default_rng()
+        # x_list = []
+        # y_list = []
+        # for n in range(num_samples):
+        #     x_c = rng.uniform(low = self.real_range[0], high = self.real_range[1])
+        #     y_c = rng.uniform(low = self.imag_range[0], high = self.imag_range[1])
+        #     x_list.append(x_c)
+        #     y_list.append(y_c)
+        #     samples = np.column_stack((x_list, y_list))
+        
+        # improve the code by using numpy vectorization
         rng = np.random.default_rng()
-        x_list = []
-        y_list = []
-        for n in range(num_samples):
-            x_c = rng.uniform(low = self.real_range[0], high = self.real_range[1])
-            y_c = rng.uniform(low = self.imag_range[0], high = self.imag_range[1])
-            x_list.append(x_c)
-            y_list.append(y_c)
-            samples = np.column_stack((x_list, y_list))
+        x_samples = rng.uniform(low=self.real_range[0], high=self.real_range[1], size=num_samples)
+        y_samples = rng.uniform(low=self.imag_range[0], high=self.imag_range[1], size=num_samples)
+        samples = np.column_stack((x_samples, y_samples))
         return samples
         
 
@@ -168,9 +177,8 @@ class MandelbrotAnalysis:
         plt.legend()
         
         # store the image into a file, if no existing directory, create one        
-        output_dir = '../images/color_mandelbrot'
-        os.makedirs(output_dir, exist_ok=True)
-        plt.savefig(f'{output_dir}/mandelbrot_{sample_name}_{len(samples)}_maxIter_{max_iter}.png')
+        os.makedirs(IMG_COLOR_DIR, exist_ok=True)
+        plt.savefig(f'{IMG_COLOR_DIR}/mandelbrot_{sample_name}_{len(samples)}_maxIter_{max_iter}.png')
 
     def compare_sampling_methods(self, num_samples, min_iter, max_iter):
         # Code to test the sampling methods, can be removed later.
