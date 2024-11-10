@@ -33,12 +33,16 @@ def run_mset_colors():
     mset_list = list(itertools.product(num_samples_list, max_iter_list))
 
     # pure random sampling and LHS sampling can be run in parallel
-    num_workers = mp.cpu_count()
-    results = Parallel(n_jobs=num_workers)(delayed(utils.mset_colors_parallel)(mandelbrotAnalysisPlatform, num_samples, max_iter) for num_samples, max_iter in mset_list)
+    if os.name == 'nt':
+        num_workers = mp.cpu_count()
+        Parallel(n_jobs=num_workers)(delayed(utils.mset_colors_parallel)(mandelbrotAnalysisPlatform, num_samples, max_iter) for num_samples, max_iter in mset_list)
+    else:
+        for num_samples, max_iter in mset_list:
+            utils.mset_colors_parallel(mandelbrotAnalysisPlatform, num_samples, max_iter)
 
     # orthogonal sampling has to be run sequentially
     mandelbrotAnalysisPlatform._load_library()
-    utils.mset_colors_ortho_seq(num_samples_list_perfect_root, max_iter_list)
+    utils.mset_colors_ortho_seq(mandelbrotAnalysisPlatform, num_samples_list_perfect_root, max_iter_list)
 
 
 # -----------------------------------------------------------generate true area-----------------------------------------------------------------
