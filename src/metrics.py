@@ -64,7 +64,7 @@ def calculate_mse():
     }
 
 # Calculate confidence intervals and determine if they include the true area
-def calculate_confidence_intervals():
+def calculate_confidence_intervals(bins=100):
     true_area = load_area_data(f'{utils.RESULT_DIR}/trueArea.txt')
 
     pure_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_Pure.txt')
@@ -79,6 +79,7 @@ def calculate_confidence_intervals():
         mean = np.mean(areas)
         std_error = np.std(areas, ddof=1) / (np.sqrt(len(areas)) -1)
         margin_of_error = z_value * std_error
+        
         lower_bound = mean - margin_of_error
         upper_bound = mean + margin_of_error
         includes_true_area = lower_bound <= true_area <= upper_bound
@@ -88,10 +89,31 @@ def calculate_confidence_intervals():
             'upper_bound': upper_bound,
             'includes_true_area': includes_true_area
         }
-
+    
     pure_interval = calculate_interval(pure_areas)
     lhs_interval = calculate_interval(lhs_areas)
     ortho_interval = calculate_interval(ortho_areas)
+
+    intervals = [pure_interval, lhs_interval, ortho_interval]
+    areas = [pure_areas, lhs_areas, ortho_areas]
+    labels = ['Pure', 'LHS', 'Ortho']
+
+    for interval, label, area in zip(intervals, labels, areas):
+        mean = interval['mean']
+        lower_bound = interval['lower_bound']
+        upper_bound = interval['upper_bound']
+
+        sns.kdeplot(area, color='green', fill=True, label='KDE of Data')
+        # plt.axvline(mean, color='blue', linestyle='--', label=f'Mean: {mean:.2f}')
+        # plt.axvline(lower_bound, color='red', linestyle='--', label=f'95% CI Lower: {lower_bound:.2f}')
+        # plt.axvline(upper_bound, color='red', linestyle='--', label=f'95% CI Upper: {upper_bound:.2f}')
+
+        plt.legend()
+        plt.xlabel('Value')
+        plt.ylabel('Density')
+        plt.title('Smooth KDE with 95% Confidence Interval')
+        plt.savefig(os.path.join(IMG_STATISTIC_DIR, f'{label}_CI.png'))
+        plt.close()
 
     return {
         'Pure': pure_interval,
