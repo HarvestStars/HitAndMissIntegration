@@ -87,7 +87,8 @@ def calculate_confidence_intervals(bins=100):
             'mean': mean,
             'lower_bound': lower_bound,
             'upper_bound': upper_bound,
-            'includes_true_area': includes_true_area
+            'includes_true_area': includes_true_area,
+            'standard_deviation': np.std(areas)
         }
     
     pure_interval = calculate_interval(pure_areas)
@@ -100,13 +101,19 @@ def calculate_confidence_intervals(bins=100):
 
     for interval, label, area in zip(intervals, labels, areas):
         mean = interval['mean']
-        lower_bound = interval['lower_bound']
-        upper_bound = interval['upper_bound']
+        std_dev = interval['standard_deviation']
 
-        sns.kdeplot(area, color='green', fill=True, label='KDE of Data')
-        # plt.axvline(mean, color='blue', linestyle='--', label=f'Mean: {mean:.2f}')
-        # plt.axvline(lower_bound, color='red', linestyle='--', label=f'95% CI Lower: {lower_bound:.2f}')
-        # plt.axvline(upper_bound, color='red', linestyle='--', label=f'95% CI Upper: {upper_bound:.2f}')
+        sns.kdeplot(area, color='b', fill=True, label='KDE of Data')
+        plt.axvline(mean, color='k', linestyle='--', label='Mean')
+
+        plt.axvline(mean + std_dev, color='g', linestyle=':')
+        plt.axvline(mean + 2 * std_dev, color='orange', linestyle=':')
+        plt.axvline(mean + 3 * std_dev, color='r', linestyle=':')
+
+        plt.axvline(mean - std_dev, color='g', linestyle=':', label='68% CI')
+        plt.axvline(mean - 2 * std_dev, color='orange', linestyle=':', label='95% CI')
+        plt.axvline(mean - 3 * std_dev, color='r', linestyle=':', label='99.7% CI')
+
 
         plt.legend()
         plt.xlabel('Value')
