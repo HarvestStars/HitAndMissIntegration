@@ -104,9 +104,11 @@ def calculate_confidence_intervals(bins=100):
         std_dev = interval['standard_deviation']
 
         kde = stats.gaussian_kde(area)
-    
         x_vals = np.linspace(mean - 4 * std_dev, mean + 4 * std_dev, 1000)
         y_vals = kde(x_vals)
+
+        mode_index = np.argmax(y_vals)
+        mean = x_vals[mode_index]
         
         plt.plot(x_vals, y_vals, color='b')
         plt.fill_between(x_vals, y_vals, color='b', alpha=0.1)
@@ -116,11 +118,16 @@ def calculate_confidence_intervals(bins=100):
             x_line = mean + i * std_dev
             y_value = kde(x_line)
 
-            plt.vlines(x_line, ymin=0, ymax=y_value, color=color, linestyle=':')
+            mean_label = None
+            if i == 0:
+                mean_label = f'Mean: {mean:.6f}'
+            plt.vlines(x_line, ymin=0, ymax=y_value, color=color, linestyle=':', label=mean_label)
 
         plt.xlabel('Area')
         plt.ylabel('Density')
         plt.title(f'{label} Confidence Interval')
+        plt.xlim(0.0915, 0.0985)
+        plt.legend()
         plt.savefig(os.path.join(IMG_STATISTIC_DIR, f'{label}_CI.png'))
         plt.close()
 
@@ -178,13 +185,13 @@ def plot_area_distributions():
 # Example usage
 if __name__ == "__main__":
     mean_and_variance = calculate_mean_and_variance()
-    print("Mean and Variance:", mean_and_variance)
+    # print("Mean and Variance:", mean_and_variance)
 
     mse = calculate_mse()
-    print("Mean Squared Error (MSE):", mse)
+    # print("Mean Squared Error (MSE):", mse)
 
     confidence_intervals = calculate_confidence_intervals()
-    print("Confidence Intervals:", confidence_intervals)
+    # print("Confidence Intervals:", confidence_intervals)
 
     # Plot area distributions
     plot_area_distributions()
