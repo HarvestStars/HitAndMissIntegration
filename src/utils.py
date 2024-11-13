@@ -29,7 +29,8 @@ def get_and_save_true_area(mandelbrotAnalysisPlatform):
     max_num_samples_root = 3000
     max_iter = 1000
     sample = mandelbrotAnalysisPlatform.orthogonal_sampling(max_num_samples_root)
-    area = mandelbrotAnalysisPlatform.calcu_mandelbrot_area(sample, max_iter)
+    plane_area = abs(mandelbrotAnalysisPlatform.real_range[1] - mandelbrotAnalysisPlatform.real_range[0]) * (mandelbrotAnalysisPlatform.imag_range[1] - mandelbrotAnalysisPlatform.imag_range[0])
+    area = mandelbrotAnalysisPlatform.calcu_mandelbrot_area(sample, max_iter, plane_area)
     print(f"True Area of the Mandelbrot set samples is {area}")
     # Save the result to a file
     with open(f'{RESULT_DIR}/trueArea.txt', "w") as file:
@@ -117,7 +118,8 @@ def get_mset_area_collection(mandelbrotAnalysisPlatform, mset_list, sample_type=
         else:
             sample = mandelbrotAnalysisPlatform.pure_random_sampling(num_samples)
 
-        area = mandelbrotAnalysisPlatform.calcu_mandelbrot_area(sample, max_iter)
+        plane_area = abs(mandelbrotAnalysisPlatform.real_range[1] - mandelbrotAnalysisPlatform.real_range[0]) * (mandelbrotAnalysisPlatform.imag_range[1] - mandelbrotAnalysisPlatform.imag_range[0])
+        area = mandelbrotAnalysisPlatform.calcu_mandelbrot_area(sample, max_iter, plane_area)
         print(f"Area of the Mandelbrot set with method {sample_name}, {num_samples} samples and {max_iter} max iterations is {area}")
 
         # Store data for 3D plotting
@@ -203,4 +205,32 @@ def plot_convergence_curve(num_samples_vals, max_iter_vals, area_vals_diff, meth
     ax.legend()
     ax.grid()
     plt.savefig(f'{filename_prefix}_samples.png')
+    plt.close()
+
+def plot_convergence_comparison(area_data_set, trueArea, filename_prefix):
+    # Select a fixed sample size (the first sample size in the data set)
+    # fixed_sample_size = list(area_data_set.values())[0][0][0]
+    fixed_sample_size = 2560000
+
+    plt.figure(figsize=(10, 6))
+    line_styles = [('-', 'o'), ('--', 's'), (':', '^'), ('-.', 'd')]
+
+    # Plot convergence curves for each method
+    for idx, (method_name, area_data) in enumerate(area_data_set.items()):
+        # Filter data for the fixed sample size
+        filtered_data = [data for data in area_data if data[0] == fixed_sample_size]
+        if filtered_data:
+            max_iter_vals = [data[1] for data in filtered_data]
+            area_vals = [abs(data[2] - trueArea) for data in filtered_data]
+            linestyle, marker = line_styles[idx % len(line_styles)]
+            plt.plot(max_iter_vals, area_vals, label=method_name, linewidth=2, linestyle=linestyle, marker=marker)
+
+    # Plot true area as a reference line
+    plt.axhline(y=0, color='gray', linestyle='--', label='diff = 0')
+    plt.xlabel('Iterations')
+    plt.ylabel('Area Value')
+    plt.title(f'Convergence Comparison for Sample Size {fixed_sample_size}')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(f"{filename_prefix}_convergence_comparison.png")
     plt.close()
