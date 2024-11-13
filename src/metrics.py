@@ -103,22 +103,24 @@ def calculate_confidence_intervals(bins=100):
         mean = interval['mean']
         std_dev = interval['standard_deviation']
 
-        sns.kdeplot(area, color='b', fill=True, label='KDE of Data')
-        plt.axvline(mean, color='k', linestyle='--', label='Mean')
+        kde = stats.gaussian_kde(area)
+    
+        x_vals = np.linspace(mean - 4 * std_dev, mean + 4 * std_dev, 1000)
+        y_vals = kde(x_vals)
+        
+        plt.plot(x_vals, y_vals, color='b')
+        plt.fill_between(x_vals, y_vals, color='b', alpha=0.1)
 
-        plt.axvline(mean + std_dev, color='g', linestyle=':')
-        plt.axvline(mean + 2 * std_dev, color='orange', linestyle=':')
-        plt.axvline(mean + 3 * std_dev, color='r', linestyle=':')
+        colors = ["red", "orange", "green", "black", "green", "orange", "red"]
+        for i, color in zip(range(-3, 4), colors):
+            x_line = mean + i * std_dev
+            y_value = kde(x_line)
 
-        plt.axvline(mean - std_dev, color='g', linestyle=':', label='68% CI')
-        plt.axvline(mean - 2 * std_dev, color='orange', linestyle=':', label='95% CI')
-        plt.axvline(mean - 3 * std_dev, color='r', linestyle=':', label='99.7% CI')
+            plt.vlines(x_line, ymin=0, ymax=y_value, color=color, linestyle=':')
 
-
-        plt.legend()
-        plt.xlabel('Value')
+        plt.xlabel('Area')
         plt.ylabel('Density')
-        plt.title('Smooth KDE with 95% Confidence Interval')
+        plt.title(f'{label} Confidence Interval')
         plt.savefig(os.path.join(IMG_STATISTIC_DIR, f'{label}_CI.png'))
         plt.close()
 
