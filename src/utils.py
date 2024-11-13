@@ -68,7 +68,7 @@ def save_area_series_into_files(mandelbrotAnalysisPlatform):
 
 def save_area_series_into_files_with_fix_iter_and_size(mandelbrotAnalysisPlatform):
     repeat = 100
-    mset_list = [(400, 300) for _ in range(repeat)]
+    mset_list = [(2600, 800) for _ in range(repeat)]
 
     for sample_type in [0, 1, 2]:
         sample_name = mandelbrotAnalysisPlatform.get_sample_name(sample_type)
