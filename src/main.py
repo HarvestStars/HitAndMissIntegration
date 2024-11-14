@@ -68,6 +68,7 @@ def run_mset_statistic_and_plot():
 
     # Check if data exists for all sampling methods, if not, generate and save it
     if not all(area_data_set[mandelbrotAnalysisPlatform.get_sample_name(sample_type)] for sample_type in [0, 1, 2]):
+        print("Data not found, generating and saving data.")
         utils.save_area_series_into_files(mandelbrotAnalysisPlatform)
         area_data_set = utils.read_area_series_from_files(mandelbrotAnalysisPlatform)
 
@@ -131,19 +132,95 @@ def run_statistic_sample_generate():
 
 # -----------------------------------------------------------statistic metrics-----------------------------------------------------------------
 def run_statistic_metric():
-    # mean_and_variance = metrics.calculate_mean_and_variance()
-    # print("Mean and Variance:", mean_and_variance)
+    mean_and_variance = metrics.calculate_mean_and_variance()
+    print("Mean and Variance:", mean_and_variance)
 
-    # mse = metrics.calculate_mse()
-    # print("Mean Squared Error (MSE):", mse)
+    mse = metrics.calculate_mse()
+    print("Mean Squared Error (MSE):", mse)
 
-    # confidence_intervals = metrics.calculate_confidence_intervals()
-    # metrics.plot_confidence_intervals(confidence_intervals)
+    confidence_intervals = metrics.calculate_confidence_intervals()
+    metrics.plot_confidence_intervals(confidence_intervals)
 
-    # # Plot area distributions
-    # metrics.plot_area_distributions()
+    # Plot area distributions
+    metrics.plot_area_distributions()
 
     metrics.hypothesis_testing()
+
+#------------------------------------------------------------improvement converge--------------------------------------------------------------
+def run_improvement_converge():
+    if mandelbrotAnalysisPlatform.lib is None:
+        mandelbrotAnalysisPlatform._load_library()
+    
+    # Try to read data from files
+    trueA = utils.read_area_from_file()
+    if trueA == 0:
+        trueA = utils.get_and_save_true_area(mandelbrotAnalysisPlatform)
+    
+    area_data_set = utils.read_area_series_from_files(mandelbrotAnalysisPlatform)
+
+    # Check if data exists for all sampling methods, if not, generate and save it
+    if not all(area_data_set[mandelbrotAnalysisPlatform.get_sample_name(sample_type)] for sample_type in [0, 1, 2]):
+        print("Data not found, generating and saving data.")
+        utils.save_area_series_into_files(mandelbrotAnalysisPlatform)
+        area_data_set = utils.read_area_series_from_files(mandelbrotAnalysisPlatform)
+
+    plane_area = abs((mandelbrotAnalysisPlatform.real_range[1] - mandelbrotAnalysisPlatform.real_range[0]) * (mandelbrotAnalysisPlatform.imag_range[1] - mandelbrotAnalysisPlatform.imag_range[0]))
+    dimension_separate_number = 4
+    partial_area = plane_area / dimension_separate_number**2
+    adaptive_num_samples = []
+    adaptive_iter_vals = []
+    adaptive_areas = []
+
+    try:
+        with open(f'{mandelbrot_analysis.IMG_CONVERGENCE_IMPROVE_DIR}/mandelbrotArea_adaptive.txt', "r") as file:
+            print("Reading data from mandelbrotArea_adaptive.txt")
+            area_data_set["Adaptive"] = []
+            for line in file:
+                num_samples, max_iter, area = line.split()
+                area_data_set["Adaptive"].append((int(num_samples), int(max_iter), float(area)))
+                adaptive_num_samples.append(int(num_samples))
+                adaptive_iter_vals.append(int(max_iter))
+                adaptive_areas.append(float(area))
+
+    except FileNotFoundError:
+        # re create the data set
+        num_samples_list_perfect_root = [500, 800, 1000, 1600, 2000, 2400, 2600, 3000]
+        max_iter_list = [100, 150, 200, 240, 300, 400, 600, 700, 800, 900, 1000]
+        mset_list = list(itertools.product(num_samples_list_perfect_root, max_iter_list))
+        
+        for num_samples_root, max_iter in mset_list:
+            adaptive_area = 0
+            adaptive_samples = mandelbrotAnalysisPlatform.adaptive_sampling(num_samples_root, dimension_separate_number)
+            for adaptive_sample in adaptive_samples:
+                if len(adaptive_sample) == 0:
+                    continue
+                area_partial = mandelbrotAnalysisPlatform.calcu_mandelbrot_area(adaptive_sample, max_iter, partial_area)
+                adaptive_area += area_partial
+            print(f"Area of the Mandelbrot set with method Adaptive, {num_samples_root**2} samples and {max_iter} max iterations, the area is {adaptive_area}")
+            adaptive_num_samples.append(num_samples_root**2)
+            adaptive_iter_vals.append(max_iter)
+            adaptive_areas.append(adaptive_area / 16)
+        # store the image into a file, if no existing directory, create one
+        os.makedirs(mandelbrot_analysis.IMG_CONVERGENCE_IMPROVE_DIR, exist_ok=True)
+        # Save pure random sampling data to file
+        with open(f'{mandelbrot_analysis.IMG_CONVERGENCE_IMPROVE_DIR}/mandelbrotArea_adaptive.txt', "w") as file:
+            for num_samples, max_iter, area in zip(adaptive_num_samples, adaptive_iter_vals, adaptive_areas):
+                file.write(f"{num_samples} {max_iter} {area:.6f}\n")
+
+    # Calculate differences from alpha
+    area_diff_vals = [area - trueA for area in adaptive_areas]
+
+    # Generate individual 3D plots
+    utils.plot_individual_3d(adaptive_num_samples, adaptive_iter_vals, adaptive_areas, 'b', 'o', 'Adaptive Sampling', f'{mandelbrot_analysis.IMG_CONVERGENCE_IMPROVE_DIR}/3D_Diff_adaptive_sampling.png')
+
+    # Generate heatmaps
+    utils.generate_heatmap(adaptive_iter_vals, adaptive_num_samples, adaptive_areas, "Heatmap - Adaptive Sampling Area", "Max Iterations", "Number of Samples", f'{mandelbrot_analysis.IMG_CONVERGENCE_IMPROVE_DIR}/heatmap_adaptive_sampling.png')
+
+    # Generate convergence plots for each sampling method
+    utils.plot_convergence_curve(adaptive_num_samples, adaptive_iter_vals, area_diff_vals, 'Adaptive Sampling', f'{mandelbrot_analysis.IMG_CONVERGENCE_IMPROVE_DIR}/adaptive_sampling_convergence')
+
+    # Compare the convergence of the adaptive sampling method with the other methods
+    utils.plot_convergence_comparison(area_data_set, trueA, f'{mandelbrot_analysis.IMG_CONVERGENCE_IMPROVE_DIR}/improvement')
 
 # -----------------------------------------------------------main controller process-----------------------------------------------------------
 def main_controller():
@@ -156,6 +233,7 @@ def main_controller():
         print("4: Run Mandelbrot convergence analysis for fixed sample size and varying iterations")
         print("5: Run Mandelbrot statistic sample generate")
         print("6: Run Mandelbrot statistic metrics and plots")
+        print("7: Run Mandelbrot statistic improvement converge")
         print("0: Exit")
         
         try:
@@ -203,6 +281,13 @@ def main_controller():
             wait_thread = threading.Thread(target=show_wait_message, args=("Running Mandelbrot statistic metrics and plots, please wait ",))
             wait_thread.start()
             run_statistic_metric()
+            stop_event.set()
+            wait_thread.join()
+
+        elif choice == 7:
+            wait_thread = threading.Thread(target=show_wait_message, args=("Running Mandelbrot improvement converge, please wait ",))
+            wait_thread.start()
+            run_improvement_converge()
             stop_event.set()
             wait_thread.join()
 

@@ -7,6 +7,6 @@
     #define EXPORT
 #endif
 
-EXPORT void ortho_sampling_generate(int major, int runs, double *points_real, double *points_imag);
+EXPORT void ortho_sampling_generate(int major, int runs, double min_bound_real, double max_bound_real, double min_bound_imag, double max_bound_imag, double *points_real, double *points_imag);
 
 #endif // ORTHO_SAMPLING_H

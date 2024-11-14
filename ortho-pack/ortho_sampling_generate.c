@@ -12,10 +12,13 @@
 
 #define SAMPLES(major) ((major) * (major))
 
-void ortho_sampling_generate(int major, int runs, double *points_real, double *points_imag)
+void ortho_sampling_generate(int major, int runs, double min_bound_real, double max_bound_real, double min_bound_imag, double max_bound_imag, double *points_real, double *points_imag)
 {
     int i, j, k, m;
-    long double scale = 4.0 / ((long double) SAMPLES(major));
+    long double range_real = max_bound_real - min_bound_real;
+    long double range_imag = max_bound_imag - min_bound_imag;
+    long double scale_real = range_real / ((long double) SAMPLES(major));
+    long double scale_imag = range_imag / ((long double) SAMPLES(major));
     double x, y;
 
     long **xlist = malloc(major * sizeof(long *));
@@ -47,9 +50,9 @@ void ortho_sampling_generate(int major, int runs, double *points_real, double *p
         for (i = 0; i < major; i++) {  // sub-square column
             for (j = 0; j < major; j++) {  // sub-square row
                 // generate x coordinate
-                x = -2.0 + scale * (xlist[i][j] + (long double) genrand_real2());
+                x = min_bound_real + scale_real * (xlist[i][j] + (long double) genrand_real2());
                 // generate y coordinate
-                y = -2.0 + scale * (ylist[j][i] + (long double) genrand_real2());
+                y = min_bound_imag + scale_imag * (ylist[j][i] + (long double) genrand_real2());
 
                 // store the real and imaginary parts of the point
                 points_real[point_index] = x;
