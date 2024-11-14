@@ -77,11 +77,11 @@ def calculate_confidence_intervals(bins=100):
 
     def calculate_interval(areas):
         mean = np.mean(areas)
-        std_error = np.std(areas, ddof=1) / (np.sqrt(len(areas)) -1)
+        std_error = np.std(areas, ddof=1) / (np.sqrt(len(areas) - 1))
         margin_of_error = z_value * std_error
         
-        lower_bound = mean - margin_of_error
-        upper_bound = mean + margin_of_error
+        lower_bound = np.round(mean - margin_of_error, 6)
+        upper_bound = np.round(mean + margin_of_error, 6)
         includes_true_area = lower_bound <= true_area <= upper_bound
         return {
             'mean': mean,

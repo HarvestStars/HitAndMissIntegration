@@ -26,8 +26,8 @@ def mset_colors_ortho_seq(mandelbrotAnalysisPlatform, num_samples_list_perfect_r
         
 # -----------------------------------------------------------inverstigate convergence-----------------------------------------------------------
 def get_and_save_true_area(mandelbrotAnalysisPlatform):
-    max_num_samples_root = 3000
-    max_iter = 1000
+    max_num_samples_root = 2600
+    max_iter = 800
     sample = mandelbrotAnalysisPlatform.orthogonal_sampling(max_num_samples_root)
     plane_area = abs(mandelbrotAnalysisPlatform.real_range[1] - mandelbrotAnalysisPlatform.real_range[0]) * (mandelbrotAnalysisPlatform.imag_range[1] - mandelbrotAnalysisPlatform.imag_range[0])
     area = mandelbrotAnalysisPlatform.calcu_mandelbrot_area(sample, max_iter, plane_area)
