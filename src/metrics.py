@@ -95,8 +95,37 @@ def calculate_confidence_intervals(bins=100):
     lhs_interval = calculate_interval(lhs_areas)
     ortho_interval = calculate_interval(ortho_areas)
 
-    intervals = [pure_interval, lhs_interval, ortho_interval]
+    intervals = {
+        'Pure interval': pure_interval, 
+        'LHS interval': lhs_interval, 
+        'Ortho inteval': ortho_interval
+    } 
+    
+    return intervals
+
+def hypothesis_testing(confidence_level=0.95):
+    # given the true area
+    true_area = load_area_data(f'{utils.RESULT_DIR}/trueArea.txt')
+
+    area = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_Pure.txt')
+
+    area_mean = np.mean(area)
+    Z = (area_mean - true_area) / (np.std(area) / np.sqrt(len(area)))
+
+    # calculate the z-value for the confidence level
+    z_value = stats.norm.ppf((1 + confidence_level) / 2)
+    print(z_value)
+
+
+
+
+
+def plot_confidence_intervals(intervals):
+    pure_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_Pure.txt')
+    lhs_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_LHS.txt')
+    ortho_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_Ortho.txt')
     areas = [pure_areas, lhs_areas, ortho_areas]
+
     labels = ['Pure', 'LHS', 'Ortho']
 
     for interval, label, area in zip(intervals, labels, areas):
@@ -131,11 +160,6 @@ def calculate_confidence_intervals(bins=100):
         plt.savefig(os.path.join(IMG_STATISTIC_DIR, f'{label}_CI.png'))
         plt.close()
 
-    return {
-        'Pure': pure_interval,
-        'LHS': lhs_interval,
-        'Ortho': ortho_interval
-    }
 
 def plot_area_distributions():
     pure_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_Pure.txt')
@@ -191,6 +215,8 @@ if __name__ == "__main__":
     # print("Mean Squared Error (MSE):", mse)
 
     confidence_intervals = calculate_confidence_intervals()
+    plot_confidence_intervals(confidence_intervals['intervals'].values(),
+                              confidence_intervals['areas'].values())
     # print("Confidence Intervals:", confidence_intervals)
 
     # Plot area distributions

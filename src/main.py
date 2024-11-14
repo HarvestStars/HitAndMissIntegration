@@ -131,17 +131,19 @@ def run_statistic_sample_generate():
 
 # -----------------------------------------------------------statistic metrics-----------------------------------------------------------------
 def run_statistic_metric():
-    mean_and_variance = metrics.calculate_mean_and_variance()
-    print("Mean and Variance:", mean_and_variance)
+    # mean_and_variance = metrics.calculate_mean_and_variance()
+    # print("Mean and Variance:", mean_and_variance)
 
-    mse = metrics.calculate_mse()
-    print("Mean Squared Error (MSE):", mse)
+    # mse = metrics.calculate_mse()
+    # print("Mean Squared Error (MSE):", mse)
 
-    confidence_intervals = metrics.calculate_confidence_intervals()
-    print("Confidence Intervals:", confidence_intervals)
+    # confidence_intervals = metrics.calculate_confidence_intervals()
+    # metrics.plot_confidence_intervals(confidence_intervals)
 
-    # Plot area distributions
-    metrics.plot_area_distributions()
+    # # Plot area distributions
+    # metrics.plot_area_distributions()
+
+    metrics.hypothesis_testing()
 
 # -----------------------------------------------------------main controller process-----------------------------------------------------------
 def main_controller():
