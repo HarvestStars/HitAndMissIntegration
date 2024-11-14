@@ -79,9 +79,9 @@ def calculate_confidence_intervals(bins=100):
         mean = np.mean(areas)
         std_error = np.std(areas, ddof=1) / (np.sqrt(len(areas) - 1))
         margin_of_error = z_value * std_error
-        
-        lower_bound = np.round(mean - margin_of_error, 6)
-        upper_bound = np.round(mean + margin_of_error, 6)
+
+        lower_bound = mean - margin_of_error
+        upper_bound = mean + margin_of_error
         includes_true_area = lower_bound <= true_area <= upper_bound
         return {
             'mean': mean,
@@ -121,30 +121,35 @@ def plot_histograms():
     lhs_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_LHS.txt')
     ortho_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_Ortho.txt')
     true_value = load_area_data(f'{utils.RESULT_DIR}/trueArea.txt')[0]
-    
+    intervals = calculate_confidence_intervals().values()
 
     areas = [pure_areas, lhs_areas, ortho_areas]
     labels = ['Pure', 'LHS', 'Ortho']
     max_arr_len = max(len(area) for area in areas)
+    min_area = min(min(area) for area in areas)
+    max_area = max(max(area) for area in areas)
     bin_size = int(np.sqrt(max_arr_len))
 
-    for area, label in zip(areas, labels):
-        min_area = min(area)
-        max_area = max(area)
+    for area, label, inteval in zip(areas, labels, intervals):
+        mean_area = np.mean(area)
         bin_edges = np.linspace(min_area, max_area, bin_size + 1)
 
         plt.hist(area, bins=bin_edges, alpha=0.6)
-        
-        mean_area = np.mean(area)
-        closest_bin = np.digitize(mean_area, bin_edges) - 1
-        bin_center = (bin_edges[closest_bin] + bin_edges[closest_bin + 1]) / 2
+
+        lower_bound = inteval['lower_bound']
+        upper_bound = inteval['upper_bound']
 
         plt.xlabel('Area')
         plt.ylabel('Frequency')
-        plt.axvline(bin_center, color='k', linestyle='dashed', linewidth=1, label=f'Mean Area: {mean_area:.6f}')
-        plt.axvline(true_value, color='r', linestyle='dashed', linewidth=1, label=f'True Area: {true_value:.6f}')
+        plt.axvline(mean_area, color='k', linestyle='dashed', linewidth=1, label=f'Mean Area: {mean_area:.6f}')
+        plt.axvline(true_value, color='b', linestyle='dashed', linewidth=1, label=f'True Area: {true_value:.6f}')
+
+        plt.axvline(lower_bound, color='r', linewidth=1, label=f'Lower Bound: {lower_bound:.6f}')
+        plt.axvline(upper_bound, color='r', linewidth=1, label=f'Upper Bound: {upper_bound:.6f}')
+
         plt.title(f'{label} Histogram')
         plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+        plt.xlim(min_area, max_area)
         plt.tight_layout()
         plt.savefig(os.path.join(IMG_STATISTIC_DIR, f'histogram_{label}.png'))
         plt.close()
