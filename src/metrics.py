@@ -116,8 +116,38 @@ def hypothesis_testing(confidence_level=0.95):
     z_value = stats.norm.ppf((1 + confidence_level) / 2)
     print(z_value)
 
+def plot_histograms():
+    pure_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_Pure.txt')
+    lhs_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_LHS.txt')
+    ortho_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_Ortho.txt')
+    true_value = load_area_data(f'{utils.RESULT_DIR}/trueArea.txt')[0]
+    
 
+    areas = [pure_areas, lhs_areas, ortho_areas]
+    labels = ['Pure', 'LHS', 'Ortho']
+    max_arr_len = max(len(area) for area in areas)
+    bin_size = int(np.sqrt(max_arr_len))
 
+    for area, label in zip(areas, labels):
+        min_area = min(area)
+        max_area = max(area)
+        bin_edges = np.linspace(min_area, max_area, bin_size + 1)
+
+        plt.hist(area, bins=bin_edges, alpha=0.6)
+        
+        mean_area = np.mean(area)
+        closest_bin = np.digitize(mean_area, bin_edges) - 1
+        bin_center = (bin_edges[closest_bin] + bin_edges[closest_bin + 1]) / 2
+
+        plt.xlabel('Area')
+        plt.ylabel('Frequency')
+        plt.axvline(bin_center, color='k', linestyle='dashed', linewidth=1, label=f'Mean Area: {mean_area:.6f}')
+        plt.axvline(true_value, color='r', linestyle='dashed', linewidth=1, label=f'True Area: {true_value:.6f}')
+        plt.title(f'{label} Histogram')
+        plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+        plt.tight_layout()
+        plt.savefig(os.path.join(IMG_STATISTIC_DIR, f'histogram_{label}.png'))
+        plt.close()
 
 
 def plot_confidence_intervals(intervals):
@@ -128,13 +158,15 @@ def plot_confidence_intervals(intervals):
 
     labels = ['Pure', 'LHS', 'Ortho']
 
-    for interval, label, area in zip(intervals, labels, areas):
+    for interval, label, area in zip(intervals.values(), labels, areas):
         mean = interval['mean']
         std_dev = interval['standard_deviation']
 
         kde = stats.gaussian_kde(area)
         x_vals = np.linspace(mean - 4 * std_dev, mean + 4 * std_dev, 1000)
         y_vals = kde(x_vals)
+        
+        print(area)
 
         mode_index = np.argmax(y_vals)
         mean = x_vals[mode_index]
@@ -155,7 +187,6 @@ def plot_confidence_intervals(intervals):
         plt.xlabel('Area')
         plt.ylabel('Density')
         plt.title(f'{label} Confidence Interval')
-        plt.xlim(0.0915, 0.0985)
         plt.legend()
         plt.savefig(os.path.join(IMG_STATISTIC_DIR, f'{label}_CI.png'))
         plt.close()

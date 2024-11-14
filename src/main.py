@@ -138,8 +138,9 @@ def run_statistic_metric():
     mse = metrics.calculate_mse()
     print("Mean Squared Error (MSE):", mse)
 
-    confidence_intervals = metrics.calculate_confidence_intervals()
-    metrics.plot_confidence_intervals(confidence_intervals)
+    # confidence_intervals = metrics.calculate_confidence_intervals()
+    # metrics.plot_confidence_intervals(confidence_intervals)
+    metrics.plot_histograms()
 
     # Plot area distributions
     metrics.plot_area_distributions()
