@@ -210,27 +210,55 @@ def plot_convergence_curve(num_samples_vals, max_iter_vals, area_vals_diff, meth
 def plot_convergence_comparison(area_data_set, trueArea, filename_prefix):
     # Select a fixed sample size (the first sample size in the data set)
     # fixed_sample_size = list(area_data_set.values())[0][0][0]
-    fixed_sample_size = 2560000
+    # fixed_sample_size = 2560000
 
+    # find unique sample size in area_data_set
+    sample_sizes = set()
+    sample_sizes.update([num_samples for num_samples, _, _ in list(area_data_set.values())[3]])
+    # sort sample sizes
+    sample_sizes = sorted(sample_sizes)
+    
+    MSEs = {}
+    for method_name, area_data in area_data_set.items():
+        MSEs[method_name] = {sample_size: 0 for sample_size in sample_sizes }
+
+    for fixed_sample_size in sample_sizes:
+        plt.figure(figsize=(10, 6))
+        line_styles = [('-', 'o'), ('--', 's'), (':', '^'), ('-.', 'd')]
+
+        # Plot convergence curves for each method
+        for idx, (method_name, area_data) in enumerate(area_data_set.items()):
+            MSEs[method_name][fixed_sample_size] = round(np.mean([abs(data[2] - trueArea) for data in area_data if data[0] == fixed_sample_size and data[1] < 800]), 6)
+
+            # Filter data for the fixed sample size
+            filtered_data = [data for data in area_data if data[0] == fixed_sample_size]
+            if filtered_data:
+                max_iter_vals = [data[1] for data in filtered_data if data[1] < 800]
+                area_diff = [abs(data[2] - trueArea) for data in filtered_data if data[1] < 800]
+                linestyle, marker = line_styles[idx % len(line_styles)]
+                plt.plot(max_iter_vals, area_diff, label=method_name, linewidth=2, linestyle=linestyle, marker=marker)
+
+        # Plot true area as a reference line
+        plt.axhline(y=0, color='gray', linestyle='--', label='diff = 0')
+        plt.xlabel('Iterations')
+        plt.ylabel('Area Difference (Current - True Area)')
+        plt.title(f'Convergence Comparison for Sample Size {fixed_sample_size}')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(f"{filename_prefix}_convergence_comparison_with_fixed_size_{fixed_sample_size}.png")
+        plt.close()
+    
+    # Plot MSEs for each method
     plt.figure(figsize=(10, 6))
-    line_styles = [('-', 'o'), ('--', 's'), (':', '^'), ('-.', 'd')]
-
-    # Plot convergence curves for each method
-    for idx, (method_name, area_data) in enumerate(area_data_set.items()):
-        # Filter data for the fixed sample size
-        filtered_data = [data for data in area_data if data[0] == fixed_sample_size]
-        if filtered_data:
-            max_iter_vals = [data[1] for data in filtered_data]
-            area_vals = [abs(data[2] - trueArea) for data in filtered_data]
-            linestyle, marker = line_styles[idx % len(line_styles)]
-            plt.plot(max_iter_vals, area_vals, label=method_name, linewidth=2, linestyle=linestyle, marker=marker)
-
-    # Plot true area as a reference line
-    plt.axhline(y=0, color='gray', linestyle='--', label='diff = 0')
-    plt.xlabel('Iterations')
-    plt.ylabel('Area Value')
-    plt.title(f'Convergence Comparison for Sample Size {fixed_sample_size}')
+    plt.xlabel('Sample Size')
+    plt.ylabel('Mean Squared Error')
+    plt.title('Mean Squared Error for Different Sample Sizes')
+    for method_name, MSE_data in MSEs.items():
+        if method_name == 'Pure' or method_name == 'LHS':
+            continue
+        plt.plot(sample_sizes, [np.mean(MSE_data[sample_size]) for sample_size in sample_sizes], label=method_name, linewidth=2)
+        plt.scatter(sample_sizes, [np.mean(MSE_data[sample_size]) for sample_size in sample_sizes])
     plt.legend()
     plt.grid(True)
-    plt.savefig(f"{filename_prefix}_convergence_comparison.png")
-    plt.close()
+    plt.savefig(f"{filename_prefix}_MSE_comparison.png")
+    print(f"MSEs: {MSEs}")
