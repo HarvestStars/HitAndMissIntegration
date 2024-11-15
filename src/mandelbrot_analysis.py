@@ -178,7 +178,7 @@ class MandelbrotAnalysis:
         mask = self.mandel_convergence_check_vectorized(samples, max_iter)
         area_ratio = np.sum(mask) / len(mask)
         area = area_ratio * plane_area
-        area = round (area, 6)
+        area = round(area, 6)
         return area
 
     # Color the Mandelbrot set with plotting the samples
@@ -268,7 +268,6 @@ class MandelbrotAnalysis:
         total_samples = []
         for i in range(len(region_complexities)):
             refined_samples = self.orthogonal_sampling_partial(separate_samples_root[i], real_and_imag_parts[i][0][0], real_and_imag_parts[i][0][1], real_and_imag_parts[i][1][0], real_and_imag_parts[i][1][1])
-            #print(f"Region {i} has {len(refined_samples)} samples.")
             total_samples.append(refined_samples)
 
         # np.concatenate(total_samples)

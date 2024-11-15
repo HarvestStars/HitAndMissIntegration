@@ -197,10 +197,10 @@ def run_improvement_converge():
                     continue
                 area_partial = mandelbrotAnalysisPlatform.calcu_mandelbrot_area(adaptive_sample, max_iter, partial_area)
                 adaptive_area += area_partial
-            print(f"Area of the Mandelbrot set with method Adaptive, {num_samples_root**2} samples and {max_iter} max iterations, the area is {adaptive_area}")
+            print(f"Area of the Mandelbrot set with method Adaptive, {num_samples_root**2} samples and {max_iter} max iterations, the area is {round(adaptive_area, 6)}")
             adaptive_num_samples.append(num_samples_root**2)
             adaptive_iter_vals.append(max_iter)
-            adaptive_areas.append(adaptive_area / 16)
+            adaptive_areas.append(round(adaptive_area, 6))
         # store the image into a file, if no existing directory, create one
         os.makedirs(mandelbrot_analysis.IMG_CONVERGENCE_IMPROVE_DIR, exist_ok=True)
         # Save pure random sampling data to file
@@ -230,8 +230,8 @@ def main_controller():
         print("Select an option to run:")
         print("1: Run Mandelbrot color plottings")
         print("2: Run Generate True Area")
-        print("3: Run Mandelbrot convergence analysis for different parameters")
-        print("4: Run Mandelbrot convergence analysis for fixed sample size and varying iterations")
+        print("3: Run Mandelbrot area calculation for visualization")
+        print("4: Run Mandelbrot convergence analysis for s and i")
         print("5: Run Mandelbrot statistic sample generate")
         print("6: Run Mandelbrot statistic metrics and plots")
         print("7: Run Mandelbrot statistic improvement converge")
@@ -258,7 +258,7 @@ def main_controller():
             wait_thread.join()
 
         elif choice == 3:
-            wait_thread = threading.Thread(target=show_wait_message, args=("Running Mandelbrot convergence analysis, please wait ",))
+            wait_thread = threading.Thread(target=show_wait_message, args=("Running Mandelbrot area calculation, please wait ",))
             wait_thread.start()
             run_mset_statistic_and_plot()
             stop_event.set()
