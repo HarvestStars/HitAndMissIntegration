@@ -64,7 +64,7 @@ def calculate_mse():
     }
 
 # Calculate confidence intervals and determine if they include the true area
-def calculate_confidence_intervals(bins=100):
+def calculate_confidence_intervals():
     true_area = load_area_data(f'{utils.RESULT_DIR}/trueArea.txt')
 
     pure_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_Pure.txt')
@@ -74,23 +74,33 @@ def calculate_confidence_intervals(bins=100):
     confidence_level = 0.95
     # calculate the z-value for the confidence level
     z_value = stats.norm.ppf((1 + confidence_level) / 2)
-
+    
+    # Helper function to calculate the confidence interval for the given areas
     def calculate_interval(areas):
         mean = np.mean(areas)
-        std_error = np.std(areas, ddof=1) / (np.sqrt(len(areas) - 1))
-        margin_of_error = z_value * std_error
+        std = np.std(areas, ddof=1)
+        n = len(areas)
+
+        t_critical = stats.t.ppf(confidence_level/ 2, n - 1)
+        margin_of_error = t_critical * (std / np.sqrt(n))
 
         lower_bound = mean - margin_of_error
         upper_bound = mean + margin_of_error
-        includes_true_area = lower_bound <= true_area <= upper_bound
+
+        if lower_bound <= true_area <= upper_bound:
+            includes_true_area = True
+        else:
+            includes_true_area = False
+
         return {
             'mean': mean,
+            'standard_deviation': std,
             'lower_bound': lower_bound,
             'upper_bound': upper_bound,
-            'includes_true_area': includes_true_area,
-            'standard_deviation': np.std(areas)
+            't_critical': t_critical,
+            'true_area_included': includes_true_area
         }
-    
+
     pure_interval = calculate_interval(pure_areas)
     lhs_interval = calculate_interval(lhs_areas)
     ortho_interval = calculate_interval(ortho_areas)
@@ -103,19 +113,7 @@ def calculate_confidence_intervals(bins=100):
     
     return intervals
 
-def hypothesis_testing(confidence_level=0.95):
-    # given the true area
-    true_area = load_area_data(f'{utils.RESULT_DIR}/trueArea.txt')
-
-    area = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_Pure.txt')
-
-    area_mean = np.mean(area)
-    Z = (area_mean - true_area) / (np.std(area) / np.sqrt(len(area)))
-
-    # calculate the z-value for the confidence level
-    z_value = stats.norm.ppf((1 + confidence_level) / 2)
-    print(z_value)
-
+# Plot the confidence intervals for the Mandelbrot area results
 def plot_histograms():
     pure_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_Pure.txt')
     lhs_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_LHS.txt')
@@ -148,13 +146,13 @@ def plot_histograms():
         plt.axvline(upper_bound, color='r', linewidth=1, label=f'Upper Bound: {upper_bound:.6f}')
 
         plt.title(f'{label} Histogram')
-        plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+        # plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
         plt.xlim(min_area, max_area)
         plt.tight_layout()
         plt.savefig(os.path.join(IMG_STATISTIC_DIR, f'histogram_{label}.png'))
         plt.close()
 
-
+# Plot the confidence intervals for the Mandelbrot area results
 def plot_confidence_intervals(intervals):
     pure_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_Pure.txt')
     lhs_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_LHS.txt')
@@ -171,8 +169,6 @@ def plot_confidence_intervals(intervals):
         x_vals = np.linspace(mean - 4 * std_dev, mean + 4 * std_dev, 1000)
         y_vals = kde(x_vals)
         
-        print(area)
-
         mode_index = np.argmax(y_vals)
         mean = x_vals[mode_index]
         
@@ -196,7 +192,7 @@ def plot_confidence_intervals(intervals):
         plt.savefig(os.path.join(IMG_STATISTIC_DIR, f'{label}_CI.png'))
         plt.close()
 
-
+# Plot the distributions of the Mandelbrot area results
 def plot_area_distributions():
     pure_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_Pure.txt')
     lhs_areas = load_area_data(f'{utils.STATISTIC_RESULT_DIR}/mandelbrotArea_LHS.txt')

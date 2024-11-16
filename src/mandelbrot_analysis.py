@@ -75,15 +75,6 @@ class MandelbrotAnalysis:
         Input: expected number of samples
         Output: the x and y coordinates of those samples
         """
-        # rng = np.random.default_rng()
-        # x_list = []
-        # y_list = []
-        # for n in range(num_samples):
-        #     x_c = rng.uniform(low = self.real_range[0], high = self.real_range[1])
-        #     y_c = rng.uniform(low = self.imag_range[0], high = self.imag_range[1])
-        #     x_list.append(x_c)
-        #     y_list.append(y_c)
-        #     samples = np.column_stack((x_list, y_list))
         
         # improve the code by using numpy vectorization
         rng = np.random.default_rng()
@@ -105,18 +96,6 @@ class MandelbrotAnalysis:
         This setup ensures each variable is evenly sampled across its range.
         We assume that the number of dimensions is 2 and 
         that we are sampling for each dimension.
-
-        Parameters
-        ----------
-        N : int
-            Number of samples to generate.
-        bounds : tuple
-            Lower and upper bounds for the samples.
-        
-        Returns
-        -------
-        samples : np.ndarray
-            N samples generated using Latin Hypercube Sampling.
         """
         sampler = qmc.LatinHypercube(d=1)
         x_samples = sampler.random(n=num_samples)
